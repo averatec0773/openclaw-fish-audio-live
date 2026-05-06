@@ -4,11 +4,11 @@ This is the MVP acceptance test. The plugin is "done" when this procedure passes
 
 ## Preconditions
 
-- A local OpenClaw gateway running with this plugin installed (`openclaw plugins install @averatec0773/openclaw-fish-audio-live` or via local `dist/` link).
+- A local OpenClaw gateway running with this plugin installed (`openclaw plugins install @averatec0773/openclaw-fishaudio` or via local `dist/` link).
 - A Discord bot configured with `Message Content Intent`, `Server Members Intent`, and the `Connect`, `Speak`, `Send Messages`, `Read Message History` permissions on the target voice channel.
 - An STT provider configured (e.g., Deepgram, OpenAI). Voice channels need transcription.
 - An LLM configured.
-- `~/.openclaw/openclaw.json` includes a fish-audio-live provider block (see README) with a valid `apiKey` and `voiceId`.
+- `~/.openclaw/openclaw.json` includes a fishaudio provider block (see README) with a valid `apiKey` and `voiceId`.
 - Discord voice mode set to `streaming` (not `realtime`).
 
 ## Procedure
@@ -25,7 +25,7 @@ This is the MVP acceptance test. The plugin is "done" when this procedure passes
 
 ## Fallback transport check
 
-1. Edit `openclaw.json` and set `messages.tts.providers.fish-audio-live.transport` to `"http"`.
+1. Edit `openclaw.json` and set `messages.tts.providers.fishaudio.transport` to `"http"`.
 2. Restart the gateway.
 3. Repeat steps 2–4 above. The conversation should still work; expect noticeably higher opening latency (~1–3 seconds) since the HTTP path waits for the full audio.
 4. Reset `transport` to `"auto"` afterward.
@@ -39,6 +39,6 @@ This is the MVP acceptance test. The plugin is "done" when this procedure passes
 
 ## Failure modes and what to check
 
-- **Bot joins but no audio comes out:** Check OpenClaw logs for `Fish Audio API` errors. Verify `apiKey` and `voiceId`. Verify `streaming` mode (not `realtime`). Check that `messages.tts.provider` is set to `fish-audio-live`.
-- **Audio sounds like a different provider, not Fish Audio:** Provider is being bypassed. Check Discord channel config — it may carry its own `channels.discord.voice.tts.provider` override; set it to `fish-audio-live`. If the symptom persists, the gateway may route voice TTS through a separate config path; in that case the `SpeechProvider` may need to implement `resolveTalkConfig` or `resolveTalkOverrides` as a pass-through.
+- **Bot joins but no audio comes out:** Check OpenClaw logs for `Fish Audio API` errors. Verify `apiKey` and `voiceId`. Verify `streaming` mode (not `realtime`). Check that `messages.tts.provider` is set to `fishaudio`.
+- **Audio sounds like a different provider, not Fish Audio:** Provider is being bypassed. Check Discord channel config — it may carry its own `channels.discord.voice.tts.provider` override; set it to `fishaudio`. If the symptom persists, the gateway may route voice TTS through a separate config path; in that case the `SpeechProvider` may need to implement `resolveTalkConfig` or `resolveTalkOverrides` as a pass-through.
 - **Opening latency >2s on `transport: auto`:** WebSocket may be falling back to HTTP silently. Check logs for "Fish Audio WS:" messages. If WS is unavailable, address the network condition (proxy/firewall) and rerun.

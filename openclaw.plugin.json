@@ -1,10 +1,10 @@
 {
-  "id": "fish-audio-live",
-  "name": "Fish Audio Live",
+  "id": "fishaudio",
+  "name": "Fish Audio",
   "description": "Low-latency Fish Audio speech provider for OpenClaw, using the WebSocket TTS Live endpoint with HTTP fallback. Targeted at real-time voice channel conversation in Discord (streaming Talk mode).",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "activation": { "onStartup": false },
-  "contracts": { "speechProviders": ["fish-audio-live"] },
+  "contracts": { "speechProviders": ["fishaudio"] },
   "uiHints": {
     "apiKey": {
       "label": "API Key",

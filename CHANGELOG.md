@@ -2,6 +2,16 @@
 
 <!-- Format: [YYYY-MM-DD] vX.X.X — description -->
 
+## v0.1.0 — 2026-05-06
+
+Project rename. Breaking change for existing users — config keys must be updated.
+
+- Renamed npm package `@averatec0773/openclaw-fish-audio-live` → `@averatec0773/openclaw-fishaudio`.
+- Renamed plugin id `fish-audio-live` → `fishaudio`. Update `messages.tts.provider`, `messages.tts.providers.<id>`, `talk.provider`, `talk.providers.<id>`, and any per-account `channels.discord.accounts.<id>.voice.tts.provider` to `fishaudio`.
+- Renamed display label `Fish Audio Live` → `Fish Audio`.
+- Renamed GitHub repository `openclaw-fish-audio-live` → `openclaw-fishaudio`.
+- Renamed exported builder `buildFishAudioLiveSpeechProvider()` → `buildFishAudioSpeechProvider()`.
+
 ## v0.0.2 — 2026-05-06
 
 - Return Opus directly when the SpeechProvider request `target` is `audio-file` (Discord voice channel) in addition to `voice-note`. Previously the plugin only returned Opus for `voice-note`, which made OpenClaw transcode mp3→opus before playback in the Discord voice channel path; returning Opus directly avoids that step.

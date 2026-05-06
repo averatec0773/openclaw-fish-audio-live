@@ -58,7 +58,7 @@ export interface SpeechProviderPlugin {
   synthesize: (req: SynthesisRequest) => Promise<SynthesisResult>;
 }
 
-const PLUGIN_ID = "fish-audio-live";
+const PLUGIN_ID = "fishaudio";
 const WS_TIMEOUT_MS = 8000;
 const HTTP_TIMEOUT_MS = 30000;
 
@@ -141,10 +141,10 @@ function parseDirectiveToken(ctx: DirectiveCtx): DirectiveResult {
   }
 }
 
-export function buildFishAudioLiveSpeechProvider(): SpeechProviderPlugin {
+export function buildFishAudioSpeechProvider(): SpeechProviderPlugin {
   return {
     id: PLUGIN_ID,
-    label: "Fish Audio Live",
+    label: "Fish Audio",
     autoSelectOrder: 16,
     models: ["s2-pro", "s1"] as const,
 

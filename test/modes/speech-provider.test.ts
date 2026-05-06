@@ -10,7 +10,7 @@ vi.mock("../../src/fish-audio/voice-list.js", () => ({
   listVoices: vi.fn(),
 }));
 
-import { buildFishAudioLiveSpeechProvider } from "../../src/modes/speech-provider.js";
+import { buildFishAudioSpeechProvider } from "../../src/modes/speech-provider.js";
 import { synthesizeViaWebSocket } from "../../src/fish-audio/websocket-live.js";
 import { synthesizeViaHttp } from "../../src/fish-audio/http-fallback.js";
 
@@ -33,16 +33,16 @@ beforeEach(() => {
   httpFn.mockReset();
 });
 
-describe("buildFishAudioLiveSpeechProvider", () => {
+describe("buildFishAudioSpeechProvider", () => {
   it("exposes id, label, and supported models", () => {
-    const p = buildFishAudioLiveSpeechProvider();
-    expect(p.id).toBe("fish-audio-live");
+    const p = buildFishAudioSpeechProvider();
+    expect(p.id).toBe("fishaudio");
     expect(p.label).toMatch(/Fish Audio/i);
     expect(p.models).toEqual(["s2-pro", "s1"]);
   });
 
   it("isConfigured returns false when apiKey or voiceId missing", () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     expect(p.isConfigured({ providerConfig: {} })).toBe(false);
     expect(p.isConfigured({ providerConfig: { apiKey: "k" } })).toBe(false);
     expect(p.isConfigured({ providerConfig: { voiceId: VALID_VOICE } })).toBe(false);
@@ -51,7 +51,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
 
   it("synthesize uses WebSocket by default (transport=auto)", async () => {
     wsFn.mockResolvedValueOnce(Buffer.from("wsbuf"));
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const out = await p.synthesize({
       text: "hi",
       providerConfig: baseProviderConfig,
@@ -69,7 +69,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
   it("synthesize falls back to HTTP when WebSocket throws and transport=auto", async () => {
     wsFn.mockRejectedValueOnce(new Error("ws unreachable"));
     httpFn.mockResolvedValueOnce(Buffer.from("httpbuf"));
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const out = await p.synthesize({
       text: "hi",
       providerConfig: baseProviderConfig,
@@ -84,7 +84,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
 
   it("synthesize does NOT fall back when transport=websocket", async () => {
     wsFn.mockRejectedValueOnce(new Error("nope"));
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     await expect(p.synthesize({
       text: "hi",
       providerConfig: { ...baseProviderConfig, transport: "websocket" },
@@ -97,7 +97,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
 
   it("synthesize forces HTTP when transport=http", async () => {
     httpFn.mockResolvedValueOnce(Buffer.from("h"));
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     await p.synthesize({
       text: "hi",
       providerConfig: { ...baseProviderConfig, transport: "http" },
@@ -111,7 +111,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
 
   it("synthesize switches to opus when target=voice-note", async () => {
     wsFn.mockResolvedValueOnce(Buffer.from("o"));
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const out = await p.synthesize({
       text: "hi",
       providerConfig: baseProviderConfig,
@@ -127,7 +127,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
 
   it("synthesize switches to opus when target=audio-file (Discord voice channel)", async () => {
     wsFn.mockResolvedValueOnce(Buffer.from("o"));
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const out = await p.synthesize({
       text: "hi",
       providerConfig: baseProviderConfig,
@@ -142,7 +142,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
   });
 
   it("synthesize throws when no apiKey configured (and FISH_AUDIO_API_KEY not set)", async () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const originalEnv = process.env.FISH_AUDIO_API_KEY;
     delete process.env.FISH_AUDIO_API_KEY;
     try {
@@ -159,7 +159,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
   });
 
   it("synthesize throws when no voiceId configured", async () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     await expect(p.synthesize({
       text: "hi",
       providerConfig: { ...baseProviderConfig, voiceId: "" },
@@ -171,7 +171,7 @@ describe("buildFishAudioLiveSpeechProvider", () => {
 
   it("synthesize honors providerOverrides.voiceId", async () => {
     wsFn.mockResolvedValueOnce(Buffer.from("x"));
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     await p.synthesize({
       text: "hi",
       providerConfig: baseProviderConfig,
@@ -187,7 +187,7 @@ describe("parseDirectiveToken", () => {
   const allowAll = { allowVoice: true, allowModelId: true, allowVoiceSettings: true };
 
   it("handles fish_voice with valid id", () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const result = p.parseDirectiveToken!({
       key: "fish_voice",
       value: VALID_VOICE,
@@ -199,7 +199,7 @@ describe("parseDirectiveToken", () => {
   });
 
   it("rejects fish_voice with invalid id (warn, no override)", () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const result = p.parseDirectiveToken!({
       key: "fish_voice", value: "bad", policy: allowAll, currentOverrides: {},
     });
@@ -209,14 +209,14 @@ describe("parseDirectiveToken", () => {
   });
 
   it("handles fish_speed within range", () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     expect(p.parseDirectiveToken!({
       key: "fish_speed", value: "1.5", policy: allowAll, currentOverrides: {},
     }).overrides).toEqual({ speed: 1.5 });
   });
 
   it("warns on fish_speed out of range", () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     const r = p.parseDirectiveToken!({
       key: "fish_speed", value: "9", policy: allowAll, currentOverrides: {},
     });
@@ -225,7 +225,7 @@ describe("parseDirectiveToken", () => {
   });
 
   it("ignores unknown keys", () => {
-    const p = buildFishAudioLiveSpeechProvider();
+    const p = buildFishAudioSpeechProvider();
     expect(p.parseDirectiveToken!({
       key: "openai_voice", value: "alloy", policy: allowAll, currentOverrides: {},
     }).handled).toBe(false);

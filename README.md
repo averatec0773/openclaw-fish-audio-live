@@ -1,8 +1,8 @@
-# openclaw-fish-audio-live
+# openclaw-fishaudio
 
 A [Fish Audio](https://fish.audio) speech provider plugin for [OpenClaw](https://openclaw.ai). The plugin registers as a `SpeechProvider` and uses the [WebSocket TTS Live](https://docs.fish.audio/api-reference/endpoint/websocket/tts-live) endpoint for synthesis, with the HTTP `/v1/tts` endpoint as a fallback. The primary use case is real-time conversation in Discord voice channels; the plugin is also usable for any other target OpenClaw routes through a `SpeechProvider`, such as Telegram or WhatsApp voice notes.
 
-The plugin id is `fish-audio-live`.
+The plugin id is `fishaudio`.
 
 ## Features
 
@@ -22,7 +22,7 @@ Out of scope: STT, voice cloning upload, barge-in, and the OpenClaw `realtime` T
 ## Install
 
 ```bash
-openclaw plugins install @averatec0773/openclaw-fish-audio-live
+openclaw plugins install @averatec0773/openclaw-fishaudio
 ```
 
 Obtain an API key at [fish.audio](https://fish.audio) under Account → API. Restart OpenClaw after installation.
@@ -35,9 +35,9 @@ Minimum configuration, sufficient for voice-note and chat TTS targets:
 {
   messages: {
     tts: {
-      provider: "fish-audio-live",
+      provider: "fishaudio",
       providers: {
-        "fish-audio-live": {
+        fishaudio: {
           apiKey: "your-fish-audio-api-key",   // or set FISH_AUDIO_API_KEY in the environment
           voiceId: "reference-id-of-your-voice",
           model: "s2-pro",                      // s2-pro (default) | s1
@@ -63,7 +63,7 @@ Minimum configuration, sufficient for voice-note and chat TTS targets:
         "<your-bot-account-id>": {
           voice: {
             enabled: true,                 // gates /vc commands and the voice intent
-            tts: { provider: "fish-audio-live", auto: "inbound" }
+            tts: { provider: "fishaudio", auto: "inbound" }
           }
         }
       }
@@ -71,9 +71,9 @@ Minimum configuration, sufficient for voice-note and chat TTS targets:
   },
 
   talk: {                                  // 2. Read by the talk-voice plugin
-    provider: "fish-audio-live",
+    provider: "fishaudio",
     providers: {
-      "fish-audio-live": {
+      fishaudio: {
         voiceId: "your-fish-voice-id",
         model: "s2-pro",
         latency: "low",
