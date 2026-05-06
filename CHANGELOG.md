@@ -4,11 +4,11 @@
 
 ## v0.0.1 — Unreleased
 
-Initial implementation of the Fish Audio Realtime SpeechProvider.
+Initial implementation of the Fish Audio Live SpeechProvider.
 
 - WebSocket TTS Live primary transport (`wss://api.fish.audio/v1/tts/live`) with `latency: low` default.
 - HTTP `/v1/tts` fallback when WebSocket is unavailable; user-configurable transport selection (`auto` / `websocket` / `http`).
-- Plugin id `fish-audio-realtime` (distinct from `fish-audio`) so it coexists with `@conan-scott/openclaw-fish-audio`.
+- Plugin id `fish-audio-live` (distinct from `fish-audio`) so it coexists with `@conan-scott/openclaw-fish-audio`.
 - Inline directives prefixed `fishaudio_*` / `fish_*` for voice, speed, model, latency, temperature, top_p.
 - Voice list helper that returns user's own clones plus popular community voices.
 - v2 RealtimeVoiceProvider (Mode C) placeholder under `src/modes/realtime-bridge.ts`.

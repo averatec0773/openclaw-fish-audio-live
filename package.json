@@ -1,5 +1,5 @@
 {
-  "name": "@averatec0773/openclaw-fishaudio-realtime",
+  "name": "@averatec0773/openclaw-fish-audio-live",
   "version": "0.0.1",
   "type": "module",
   "license": "MIT",
@@ -7,10 +7,10 @@
   "description": "Fish Audio low-latency speech provider for OpenClaw, using WebSocket TTS Live for real-time Discord voice channel conversation.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/averatec0773/openclaw-fishaudio-realtime.git"
+    "url": "git+https://github.com/averatec0773/openclaw-fish-audio-live.git"
   },
-  "homepage": "https://github.com/averatec0773/openclaw-fishaudio-realtime#readme",
-  "bugs": { "url": "https://github.com/averatec0773/openclaw-fishaudio-realtime/issues" },
+  "homepage": "https://github.com/averatec0773/openclaw-fish-audio-live#readme",
+  "bugs": { "url": "https://github.com/averatec0773/openclaw-fish-audio-live/issues" },
   "keywords": [
     "openclaw","openclaw-plugin","fish-audio","fish-audio-tts",
     "tts","speech-provider","realtime","discord","voice-channel","websocket"

@@ -1,10 +1,10 @@
-# openclaw-fishaudio-realtime
+# openclaw-fish-audio-live
 
 A low-latency [Fish Audio](https://fish.audio) speech provider for [OpenClaw](https://openclaw.ai), using the [WebSocket TTS Live](https://docs.fish.audio/api-reference/endpoint/websocket/tts-live) endpoint to power real-time voice conversation in Discord voice channels.
 
 ## What it does
 
-- Registers `fish-audio-realtime` as an OpenClaw `SpeechProvider`.
+- Registers `fish-audio-live` as an OpenClaw `SpeechProvider`.
 - Uses Fish Audio's WebSocket Live endpoint with `latency: low` by default to minimize time-to-first-audio.
 - Falls back to the HTTP `/v1/tts` endpoint when the WebSocket cannot connect.
 - Targeted at OpenClaw's Discord voice channel in `streaming` Talk mode (the user speaks → OpenClaw transcribes → LLM → this plugin synthesizes the AI's reply with Fish Audio).
@@ -17,7 +17,7 @@ A low-latency [Fish Audio](https://fish.audio) speech provider for [OpenClaw](ht
 ## Installation
 
 ```bash
-openclaw plugins install @averatec0773/openclaw-fishaudio-realtime
+openclaw plugins install @averatec0773/openclaw-fish-audio-live
 ```
 
 Then restart OpenClaw.
@@ -36,9 +36,9 @@ In `~/.openclaw/openclaw.json`:
 {
   messages: {
     tts: {
-      provider: "fish-audio-realtime",
+      provider: "fish-audio-live",
       providers: {
-        "fish-audio-realtime": {
+        "fish-audio-live": {
           apiKey: "your-fish-audio-api-key",   // or set FISH_AUDIO_API_KEY env var
           voiceId: "reference-id-of-your-voice",
           model: "s2-pro",                      // s2-pro (default) | s1
@@ -83,7 +83,7 @@ See [`docs/manual-e2e.md`](docs/manual-e2e.md) for the manual Discord voice chan
 
 ## Relation to `@conan-scott/openclaw-fish-audio`
 
-[Conan Scott's plugin](https://github.com/Conan-Scott/openclaw-fish-audio) (plugin id `fish-audio`) uses the HTTP batch endpoint. This plugin (id `fish-audio-realtime`) uses the WebSocket Live endpoint with HTTP fallback, optimized for real-time voice channel use. The two plugins coexist; pick whichever fits your latency requirements.
+[Conan Scott's plugin](https://github.com/Conan-Scott/openclaw-fish-audio) (plugin id `fish-audio`) uses the HTTP batch endpoint. This plugin (id `fish-audio-live`) uses the WebSocket Live endpoint with HTTP fallback, optimized for real-time voice channel use. The two plugins coexist; pick whichever fits your latency requirements.
 
 ## License
 
