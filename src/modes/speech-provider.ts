@@ -1,7 +1,7 @@
 import { default as WS } from "ws";
 import {
-  normalizeBaseUrl,
   isValidVoiceId,
+  normalizeConfig,
 } from "../fish-audio/config.js";
 import { synthesizeViaHttp } from "../fish-audio/http-fallback.js";
 import { synthesizeViaWebSocket } from "../fish-audio/websocket-live.js";
@@ -10,7 +10,7 @@ import type {
   FishAudioFormat,
   FishAudioLatency,
   FishAudioModel,
-  FishAudioTransport,
+  FishAudioProviderConfig,
 } from "../fish-audio/types.js";
 
 interface DirectivePolicy {
@@ -62,18 +62,6 @@ const PLUGIN_ID = "fish-audio-realtime";
 const WS_TIMEOUT_MS = 8000;
 const HTTP_TIMEOUT_MS = 30000;
 
-interface ResolvedConfig {
-  apiKey: string;
-  baseUrl: string;
-  voiceId: string;
-  model: FishAudioModel;
-  latency: FishAudioLatency;
-  speed?: number;
-  temperature?: number;
-  topP?: number;
-  transport: FishAudioTransport;
-}
-
 function trim(v: unknown): string | undefined {
   return typeof v === "string" && v.trim() ? v.trim() : undefined;
 }
@@ -88,23 +76,9 @@ function clampModel(v: unknown): FishAudioModel {
   const s = trim(v);
   return s === "s2-pro" || s === "s1" ? s : "s2-pro";
 }
-function clampTransport(v: unknown): FishAudioTransport {
-  const s = trim(v);
-  return s === "websocket" || s === "http" ? s : "auto";
-}
 
-function readConfig(raw: Record<string, unknown>): ResolvedConfig {
-  return {
-    apiKey: trim(raw.apiKey) ?? "",
-    baseUrl: normalizeBaseUrl(trim(raw.baseUrl)),
-    voiceId: trim(raw.voiceId) ?? "",
-    model: clampModel(raw.model),
-    latency: clampLatency(raw.latency),
-    speed: asNumber(raw.speed),
-    temperature: asNumber(raw.temperature),
-    topP: asNumber(raw.topP),
-    transport: clampTransport(raw.transport),
-  };
+function readConfig(raw: Record<string, unknown>): FishAudioProviderConfig {
+  return normalizeConfig(raw);
 }
 
 function parseNumber(s: string): number | undefined {
