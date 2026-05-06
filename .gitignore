@@ -1,0 +1,51 @@
+# Personal (untrack to keep local: git rm --cached TODO.md)
+TODO.md
+.claude/settings.local.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+
+# Build output
+dist/
+build/
+out/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Harness template content (kept locally for AI agent context only, not shipped)
+# Source: https://github.com/averatec0773/averatec-harness-template
+# These files help Claude operate consistently inside this repo but are
+# not part of the published OpenClaw plugin.
+# ─────────────────────────────────────────────────────────────────────────────
+.claude/
+conventions/
+memory/
+CLAUDE.md
+Makefile
