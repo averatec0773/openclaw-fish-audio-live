@@ -1,36 +1,35 @@
 # openclaw-fish-audio-live
 
-A low-latency [Fish Audio](https://fish.audio) speech provider for [OpenClaw](https://openclaw.ai), using the [WebSocket TTS Live](https://docs.fish.audio/api-reference/endpoint/websocket/tts-live) endpoint to power real-time voice conversation in Discord voice channels.
+A [Fish Audio](https://fish.audio) speech provider plugin for [OpenClaw](https://openclaw.ai). The plugin registers as a `SpeechProvider` and uses the [WebSocket TTS Live](https://docs.fish.audio/api-reference/endpoint/websocket/tts-live) endpoint for synthesis, with the HTTP `/v1/tts` endpoint as a fallback. The primary use case is real-time conversation in Discord voice channels; the plugin is also usable for any other target OpenClaw routes through a `SpeechProvider`, such as Telegram or WhatsApp voice notes.
 
-## What it does
+The plugin id is `fish-audio-live`.
 
-- Registers `fish-audio-live` as an OpenClaw `SpeechProvider`.
-- Uses Fish Audio's WebSocket Live endpoint with `latency: low` by default to minimize time-to-first-audio.
-- Falls back to the HTTP `/v1/tts` endpoint when the WebSocket cannot connect.
-- Targeted at OpenClaw's Discord voice channel in `streaming` Talk mode (the user speaks → OpenClaw transcribes → LLM → this plugin synthesizes the AI's reply with Fish Audio).
+## Features
 
-## What it does *not* do (yet)
+| Feature | |
+|---|---|
+| HTTP `/v1/tts` synthesis | ✅ |
+| WebSocket `/v1/tts/live` transport | ✅ |
+| Automatic WebSocket → HTTP fallback (`transport: "auto"`) | ✅ |
+| Direct Opus output for the Discord voice channel target (`audio-file`) | ✅ |
+| Direct Opus output for the voice-note target (Telegram, WhatsApp) | ✅ |
+| Voice list combining the account's own voice clones with a page of popular community voices | ✅ |
+| Inline directives: `fishaudio_voice` / `fish_speed` / `fish_model` / `fish_latency` / `fish_temperature` / `fish_top_p` | ✅ |
+| Unit tests | 45 |
 
-- Does **not** replace OpenClaw's `realtime` Talk mode (e.g., OpenAI Realtime, Gemini Live) — those modes synthesize audio inside the model and bypass speech providers.
-- Does **not** provide STT, voice cloning upload, or barge-in. A future Mode C (`RealtimeVoiceProvider`) will own the full pipeline.
+Out of scope: STT, voice cloning upload, barge-in, and the OpenClaw `realtime` Talk mode (the latter bypasses speech providers entirely).
 
-## Installation
+## Install
 
 ```bash
 openclaw plugins install @averatec0773/openclaw-fish-audio-live
 ```
 
-Then restart OpenClaw.
+Obtain an API key at [fish.audio](https://fish.audio) under Account → API. Restart OpenClaw after installation.
 
-## Getting an API key
+## Configure
 
-1. Sign up at [fish.audio](https://fish.audio).
-2. Account → API → Create API Key.
-3. Copy the key (it begins with the prefix Fish Audio uses).
-
-## Configuration
-
-In `~/.openclaw/openclaw.json`:
+Minimum configuration, sufficient for voice-note and chat TTS targets:
 
 ```json5
 {
@@ -39,14 +38,12 @@ In `~/.openclaw/openclaw.json`:
       provider: "fish-audio-live",
       providers: {
         "fish-audio-live": {
-          apiKey: "your-fish-audio-api-key",   // or set FISH_AUDIO_API_KEY env var
+          apiKey: "your-fish-audio-api-key",   // or set FISH_AUDIO_API_KEY in the environment
           voiceId: "reference-id-of-your-voice",
           model: "s2-pro",                      // s2-pro (default) | s1
           latency: "low",                       // low (default) | balanced | normal
-          transport: "auto",                    // auto (WS, then HTTP) | websocket | http
-          // speed: 1.0,                        // 0.5–2.0 (optional)
-          // temperature: 0.7,                  // 0–1 (optional)
-          // topP: 0.7,                         // 0–1 (optional)
+          transport: "auto"                     // auto | websocket | http
+          // speed, temperature, topP are also accepted
         }
       }
     }
@@ -54,23 +51,18 @@ In `~/.openclaw/openclaw.json`:
 }
 ```
 
-For Discord voice channel use, configure the bot to use `streaming` Talk mode (not `realtime`) so this plugin's TTS is invoked. See OpenClaw's [Discord docs](https://docs.openclaw.ai/channels/discord) for the bot setup.
+### Discord voice channel — three additional blocks
 
-## Discord voice channel quickstart
-
-The full set of OpenClaw config blocks needed for `/vc join` to actually play synthesized audio in a Discord voice channel — these requirements come from upstream `@openclaw/discord` and the bundled `talk-voice` plugin, not from this plugin alone, and are easy to miss when you read only the `messages.tts` snippet above:
+`/vc join` produces no audio if any of the following blocks is missing. The requirements come from upstream `@openclaw/discord` and the bundled `talk-voice` plugin:
 
 ```json5
 {
-  // 1. Per-bot Discord voice config — without `voice.enabled: true` the
-  //    `/vc` slash commands don't appear and the Guild Voice States intent
-  //    is not requested.
-  channels: {
+  channels: {                              // 1. Per-bot voice and TTS routing
     discord: {
       accounts: {
         "<your-bot-account-id>": {
           voice: {
-            enabled: true,
+            enabled: true,                 // gates /vc commands and the voice intent
             tts: { provider: "fish-audio-live", auto: "inbound" }
           }
         }
@@ -78,10 +70,7 @@ The full set of OpenClaw config blocks needed for `/vc join` to actually play sy
     }
   },
 
-  // 2. The bundled talk-voice plugin reads top-level `talk` to decide
-  //    which provider services voice replies. Without this it silently
-  //    falls back and you get no audio.
-  talk: {
+  talk: {                                  // 2. Read by the talk-voice plugin
     provider: "fish-audio-live",
     providers: {
       "fish-audio-live": {
@@ -92,13 +81,10 @@ The full set of OpenClaw config blocks needed for `/vc join` to actually play sy
       }
     },
     speechLocale: "zh-CN",
-    interruptOnSpeech: false   // see note below
+    interruptOnSpeech: false               // see operational notes below
   },
 
-  // 3. STT (input side). gpt-4o-transcribe works; gpt-4o-mini-transcribe
-  //    currently returns an empty `text` field via OpenClaw's call shape
-  //    and silently fails — pin to gpt-4o-transcribe for now.
-  tools: {
+  tools: {                                 // 3. STT (input side)
     media: {
       audio: {
         enabled: true,
@@ -109,51 +95,53 @@ The full set of OpenClaw config blocks needed for `/vc join` to actually play sy
 }
 ```
 
-### Headphones, please
+### Operational notes
 
-Discord does not aggressively cancel echo on the bot side. If you test on speakers, the bot's own TTS playback will be captured by your microphone, transcribed, and treated as a new turn — you will hear an unsolicited follow-up reply. Use headphones or set `talk.interruptOnSpeech: false` (which prevents the in-progress reply from being cut, but does not stop the echo turn from being processed afterward).
+- Use headphones during testing. Discord does not perform aggressive echo cancellation on the bot side, so playback re-entering through a microphone will be transcribed and processed as a new turn.
+- Verbose logging is enabled by the gateway CLI flag `--verbose`. The environment variable `OPENCLAW_VERBOSE=1` does not enable it. To turn verbose on under Docker Compose, append `"--verbose"` to the gateway `command:` array.
+- The OpenAI model `gpt-4o-mini-transcribe` returns a 200 response with an empty `text` field when called through OpenClaw's transcription path. Use `gpt-4o-transcribe` in `tools.media.audio.models` until the upstream call shape is updated.
+- The bot leaves any voice channel on each gateway restart; rejoining requires another `/vc join`. To rejoin automatically, set `channels.discord.accounts.<id>.voice.autoJoin` to a list of `{ guildId, channelId }` entries.
 
-### Verbose debug logging
+## End-to-end timing
 
-OpenClaw exposes per-stage voice timings (`capture ready / transcription ok / reply ok / tts ok / playback start / playback done`) only when verbose is enabled. **Set the CLI flag, not the env var** — `OPENCLAW_VERBOSE=1` is read in only one non-load-bearing path, so it looks like it should work but silently no-ops:
+Per-stage timings observed on a representative Discord voice channel turn (`gpt-4o-transcribe` for STT, `gpt-5-nano` with `tools.allow=["message"]` for the LLM, Fish Audio `s2-pro` voice clone, eastern-US VPS, reply ≈ 14 characters):
 
-```yaml
-# docker-compose.yml command argv
-command: ["node", "dist/index.js", "gateway", "--bind", "0.0.0.0", "--port", "18789", "--verbose"]
+| Stage | Observed | Driver |
+|---|---|---|
+| Discord `speaking_end` grace | ~1.2s | Hardcoded by the upstream Discord plugin; not configurable. |
+| OPUS decode plus WAV write | ~0.2s | Local I/O. |
+| STT | 1.5–2.5s | OpenAI transcription TTFT. |
+| LLM | 6–8s | OpenAI TTFT for `gpt-5-nano`. Switching to `claude-haiku-4-5` or `cerebras/llama-3.3-70b` reduces this stage. |
+| TTS (this plugin) | ~1.0s | Fish Audio API plus buffer write. |
+| Playback start | ~0.1s | Local. |
+| End-to-end (stop-talking → audio plays) | ~10–13s | Currently dominated by the LLM stage. |
+
+A direct `curl` to Fish Audio for the same input completes in roughly 0.8 seconds, matching the TTS stage above. Going materially below ~3 seconds end-to-end requires OpenClaw's `realtime` Talk mode, which the Discord channel plugin does not currently route through.
+
+## Inline directives
+
+Provider-prefixed directive keys are supported, with both `fishaudio_*` and `fish_*` aliases:
+
+```text
+[[tts:fish_voice=<ref_id>]]         Switch voice
+[[tts:fish_speed=1.2]]              Prosody speed (0.5–2.0)
+[[tts:fish_model=s1]]               s2-pro | s1
+[[tts:fish_latency=balanced]]       low | balanced | normal
+[[tts:fish_temperature=0.7]]        0–1
+[[tts:fish_top_p=0.8]]              0–1
 ```
 
-### Bot leaves voice channel on every restart
-
-Each container/gateway restart drops the bot from any voice channel it was in; the user has to `/vc join` again. To auto-rejoin a known channel, set `channels.discord.accounts.<id>.voice.autoJoin` (a list of `{ guildId, channelId }` entries).
-
-## Finding a voice ID
+## Voice list
 
 ```bash
 openclaw /voice list
 ```
 
-The plugin returns your own cloned voices first, then a page of popular community voices.
+Returns the account's own voice clones first, followed by a page of popular community voices.
 
-## Inline directives
+## Verification
 
-All directive keys are prefixed to avoid colliding with other speech providers. Both `fishaudio_*` and shorter `fish_*` aliases work.
-
-```
-[[tts:fishaudio_voice=<ref_id>]]    Switch voice
-[[tts:fishaudio_speed=1.2]]         Prosody speed (0.5–2.0)
-[[tts:fishaudio_model=s1]]          Model override
-[[tts:fishaudio_latency=balanced]]  Latency mode
-[[tts:fishaudio_temperature=0.7]]   Sampling temperature (0–1)
-[[tts:fishaudio_top_p=0.8]]         Top-p sampling (0–1)
-```
-
-## End-to-end verification
-
-See [`docs/manual-e2e.md`](docs/manual-e2e.md) for the manual Discord voice channel acceptance test.
-
-## Relation to `@conan-scott/openclaw-fish-audio`
-
-[Conan Scott's plugin](https://github.com/Conan-Scott/openclaw-fish-audio) (plugin id `fish-audio`) uses the HTTP batch endpoint. This plugin (id `fish-audio-live`) uses the WebSocket Live endpoint with HTTP fallback, optimized for real-time voice channel use. The two plugins coexist; pick whichever fits your latency requirements.
+A manual Discord voice channel acceptance procedure is documented at [`docs/manual-e2e.md`](docs/manual-e2e.md).
 
 ## License
 

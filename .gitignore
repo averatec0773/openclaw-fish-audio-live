@@ -45,3 +45,9 @@ htmlcov/
 # ─────────────────────────────────────────────────────────────────────────────
 .claude/
 CLAUDE.md
+
+# Superpowers: planning, design specs, decisions, journal — local-only.
+docs/superpowers/
+
+# npm pack output
+*.tgz
