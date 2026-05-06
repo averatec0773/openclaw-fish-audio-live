@@ -2,6 +2,12 @@
 
 <!-- Format: [YYYY-MM-DD] vX.X.X — description -->
 
+## v0.0.2 — 2026-05-06
+
+Performance fix for Discord voice channel playback latency.
+
+- Return Opus directly from Fish Audio when SpeechProvider `target === "audio-file"` (Discord voice channel) in addition to `voice-note`. Previously returned mp3 forcing OpenClaw to ffmpeg-transcode mp3→opus, adding ~8s per turn end-to-end. Verified Fish HTTP TTS itself takes ~0.8s for short Chinese reply; the rest was transcode overhead.
+
 ## v0.0.1 — Unreleased
 
 Initial implementation of the Fish Audio Live SpeechProvider.

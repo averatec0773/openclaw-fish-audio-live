@@ -125,6 +125,22 @@ describe("buildFishAudioLiveSpeechProvider", () => {
     expect(wsFn.mock.calls[0][0].format).toBe("opus");
   });
 
+  it("synthesize switches to opus when target=audio-file (Discord voice channel)", async () => {
+    wsFn.mockResolvedValueOnce(Buffer.from("o"));
+    const p = buildFishAudioLiveSpeechProvider();
+    const out = await p.synthesize({
+      text: "hi",
+      providerConfig: baseProviderConfig,
+      providerOverrides: {},
+      timeoutMs: 30000,
+      target: "audio-file",
+    });
+    expect(out.outputFormat).toBe("opus");
+    expect(out.fileExtension).toBe(".opus");
+    expect(out.voiceCompatible).toBe(true);
+    expect(wsFn.mock.calls[0][0].format).toBe("opus");
+  });
+
   it("synthesize throws when no apiKey configured (and FISH_AUDIO_API_KEY not set)", async () => {
     const p = buildFishAudioLiveSpeechProvider();
     const originalEnv = process.env.FISH_AUDIO_API_KEY;

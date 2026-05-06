@@ -174,7 +174,7 @@ export function buildFishAudioLiveSpeechProvider(): SpeechProviderPlugin {
         throw new Error(`Fish Audio: no voiceId configured. Set messages.tts.providers.${PLUGIN_ID}.voiceId`);
       }
 
-      const useOpus = req.target === "voice-note";
+      const useOpus = req.target === "voice-note" || req.target === "audio-file";
       const format: FishAudioFormat = useOpus ? "opus" : "mp3";
 
       const merged = {
