@@ -56,6 +56,76 @@ In `~/.openclaw/openclaw.json`:
 
 For Discord voice channel use, configure the bot to use `streaming` Talk mode (not `realtime`) so this plugin's TTS is invoked. See OpenClaw's [Discord docs](https://docs.openclaw.ai/channels/discord) for the bot setup.
 
+## Discord voice channel quickstart
+
+The full set of OpenClaw config blocks needed for `/vc join` to actually play synthesized audio in a Discord voice channel — these requirements come from upstream `@openclaw/discord` and the bundled `talk-voice` plugin, not from this plugin alone, and are easy to miss when you read only the `messages.tts` snippet above:
+
+```json5
+{
+  // 1. Per-bot Discord voice config — without `voice.enabled: true` the
+  //    `/vc` slash commands don't appear and the Guild Voice States intent
+  //    is not requested.
+  channels: {
+    discord: {
+      accounts: {
+        "<your-bot-account-id>": {
+          voice: {
+            enabled: true,
+            tts: { provider: "fish-audio-live", auto: "inbound" }
+          }
+        }
+      }
+    }
+  },
+
+  // 2. The bundled talk-voice plugin reads top-level `talk` to decide
+  //    which provider services voice replies. Without this it silently
+  //    falls back and you get no audio.
+  talk: {
+    provider: "fish-audio-live",
+    providers: {
+      "fish-audio-live": {
+        voiceId: "your-fish-voice-id",
+        model: "s2-pro",
+        latency: "low",
+        transport: "auto"
+      }
+    },
+    speechLocale: "zh-CN",
+    interruptOnSpeech: false   // see note below
+  },
+
+  // 3. STT (input side). gpt-4o-transcribe works; gpt-4o-mini-transcribe
+  //    currently returns an empty `text` field via OpenClaw's call shape
+  //    and silently fails — pin to gpt-4o-transcribe for now.
+  tools: {
+    media: {
+      audio: {
+        enabled: true,
+        models: [{ provider: "openai", model: "gpt-4o-transcribe" }]
+      }
+    }
+  }
+}
+```
+
+### Headphones, please
+
+Discord does not aggressively cancel echo on the bot side. If you test on speakers, the bot's own TTS playback will be captured by your microphone, transcribed, and treated as a new turn — you will hear an unsolicited follow-up reply. Use headphones or set `talk.interruptOnSpeech: false` (which prevents the in-progress reply from being cut, but does not stop the echo turn from being processed afterward).
+
+### Verbose debug logging
+
+OpenClaw exposes per-stage voice timings (`capture ready / transcription ok / reply ok / tts ok / playback start / playback done`) only when verbose is enabled. **Set the CLI flag, not the env var** — `OPENCLAW_VERBOSE=1` is read in only one non-load-bearing path, so it looks like it should work but silently no-ops:
+
+```yaml
+# docker-compose.yml command argv
+command: ["node", "dist/index.js", "gateway", "--bind", "0.0.0.0", "--port", "18789", "--verbose"]
+```
+
+### Bot leaves voice channel on every restart
+
+Each container/gateway restart drops the bot from any voice channel it was in; the user has to `/vc join` again. To auto-rejoin a known channel, set `channels.discord.accounts.<id>.voice.autoJoin` (a list of `{ guildId, channelId }` entries).
+
 ## Finding a voice ID
 
 ```bash
