@@ -1,0 +1,48 @@
+{
+  "id": "fish-audio-realtime",
+  "name": "Fish Audio Realtime",
+  "description": "Low-latency Fish Audio speech provider for OpenClaw, using the WebSocket TTS Live endpoint with HTTP fallback. Targeted at real-time voice channel conversation in Discord (streaming Talk mode).",
+  "version": "0.0.1",
+  "activation": { "onStartup": false },
+  "contracts": { "speechProviders": ["fish-audio-realtime"] },
+  "uiHints": {
+    "apiKey": {
+      "label": "API Key",
+      "placeholder": "your-fish-audio-api-key",
+      "sensitive": true,
+      "help": "Fish Audio API key from https://fish.audio/account/api"
+    },
+    "voiceId": {
+      "label": "Voice ID",
+      "placeholder": "abcdefghij1234567890",
+      "help": "Reference ID of the Fish Audio voice. Find via /voice list or fish.audio."
+    },
+    "model": {
+      "label": "Model",
+      "help": "TTS model: s2-pro (default, higher quality) or s1."
+    },
+    "latency": {
+      "label": "Latency mode",
+      "help": "low (default), balanced, or normal. low is recommended for real-time voice channels."
+    },
+    "transport": {
+      "label": "Transport",
+      "help": "auto (default; WebSocket Live, fall back to HTTP), websocket, or http."
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": { "type": "string", "description": "Fish Audio API key" },
+      "voiceId": { "type": "string", "description": "Reference ID of the voice to use" },
+      "baseUrl": { "type": "string", "description": "Custom API base URL (default: https://api.fish.audio)" },
+      "model": { "type": "string", "enum": ["s2-pro", "s1"], "description": "TTS model (default: s2-pro)" },
+      "latency": { "type": "string", "enum": ["normal", "balanced", "low"], "description": "Latency mode (default: low)" },
+      "transport": { "type": "string", "enum": ["auto", "websocket", "http"], "description": "Transport selection (default: auto)" },
+      "speed": { "type": "number", "minimum": 0.5, "maximum": 2, "description": "Prosody speed (default: 1.0)" },
+      "temperature": { "type": "number", "minimum": 0, "maximum": 1, "description": "Sampling temperature" },
+      "topP": { "type": "number", "minimum": 0, "maximum": 1, "description": "Top-p sampling" }
+    }
+  }
+}
