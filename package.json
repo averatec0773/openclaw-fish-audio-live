@@ -1,0 +1,43 @@
+{
+  "name": "@averatec0773/openclaw-fishaudio-realtime",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "author": "averatec0773",
+  "description": "Fish Audio low-latency speech provider for OpenClaw, using WebSocket TTS Live for real-time Discord voice channel conversation.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/averatec0773/openclaw-fishaudio-realtime.git"
+  },
+  "homepage": "https://github.com/averatec0773/openclaw-fishaudio-realtime#readme",
+  "bugs": { "url": "https://github.com/averatec0773/openclaw-fishaudio-realtime/issues" },
+  "keywords": [
+    "openclaw","openclaw-plugin","fish-audio","fish-audio-tts",
+    "tts","speech-provider","realtime","discord","voice-channel","websocket"
+  ],
+  "openclaw": {
+    "extensions": ["./dist/index.js"],
+    "compat": { "pluginApi": ">=2026.3.24-beta.2", "minGatewayVersion": "2026.3.31" }
+  },
+  "files": [
+    "src","openclaw.plugin.json","README.md","LICENSE","CHANGELOG.md","dist"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "esbuild src/index.ts src/modes/speech-provider.ts src/modes/realtime-bridge.ts src/fish-audio/config.ts src/fish-audio/http-fallback.ts src/fish-audio/websocket-live.ts src/fish-audio/voice-list.ts src/fish-audio/types.ts --bundle=false --platform=node --format=esm --target=node22 --outdir=dist --out-extension:.js=.js",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "openclaw": "^2026.5.3-beta.2",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.1.0",
+    "esbuild": "^0.28.0"
+  },
+  "engines": { "node": ">=22" }
+}

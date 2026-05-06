@@ -39,13 +39,9 @@ coverage/
 htmlcov/
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Harness template content (kept locally for AI agent context only, not shipped)
-# Source: https://github.com/averatec0773/averatec-harness-template
-# These files help Claude operate consistently inside this repo but are
-# not part of the published OpenClaw plugin.
+# Harness content (local-only; not shipped with the published plugin)
+# Original source: https://github.com/averatec0773/averatec-harness-template
+# Trimmed to the minimum useful here: Claude permissions + changelog skill.
 # ─────────────────────────────────────────────────────────────────────────────
 .claude/
-conventions/
-memory/
 CLAUDE.md
-Makefile
